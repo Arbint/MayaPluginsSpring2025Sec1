@@ -118,6 +118,7 @@ class LimbRigger:
         mc.setAttr(topGrpName+".overrideEnabled", 1)
         mc.setAttr(topGrpName+".overrideRGBColors", 1)
         mc.setAttr(topGrpName+".overrideColorRGB", r, g, b, type="double3")
+        print("jobs Done!")
 
 class ColorPicker(QWidget):
     def __init__(self):
