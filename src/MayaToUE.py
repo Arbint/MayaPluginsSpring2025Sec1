@@ -16,6 +16,24 @@ class MayaToUE:
             raise Exception(f"{selectedJnt} is not a joint, Please Select the Root Joint of the Rig!")
 
         self.rootJnt = selectedJnt 
+
+    def AddRootJoint(self):
+        if (not self.rootJnt) or (not mc.objExists(self.rootJnt)):
+            raise Exception("no Root Joint Assigned, please set the current root joint of the rig first")
+
+        currentRootJntPosX, currentRootJntPosY, currentRootJntPosZ = mc.xform(self.rootJnt, q=True, t=True, ws=True)
+        if currentRootJntPosX == 0 and currentRootJntPosY == 0 and currentRootJntPosZ == 0:
+            raise Exception("current root joint is already at origin, no need to make a new one!")
+
+        mc.select(cl=True)  
+        rootJntName = self.rootJnt + "_root"
+        mc.joint(n=rootJntName)
+        mc.parent(self.rootJnt, rootJntName)
+        self.rootJnt = rootJntName
+
+        
+
+        
         
 
 
@@ -39,6 +57,18 @@ class MayaToUEWidget(QMayaWindow):
         setSelectionAsRootJntBtn = QPushButton("Set Root Joint")
         setSelectionAsRootJntBtn.clicked.connect(self.SetSelectionAsRootJointBtnClicked)
         self.masterLayout.addWidget(setSelectionAsRootJntBtn)
+
+        addRootJntBtn = QPushButton("Add Root Joint")
+        addRootJntBtn.clicked.connect(self.AddRootJntButtonClicked)
+        self.masterLayout.addWidget(addRootJntBtn)
+
+
+    def AddRootJntButtonClicked(self):
+        try:
+            self.mayaToUE.AddRootJoint()
+            self.rootJntText.setText(self.mayaToUE.rootJnt)
+        except Exception as e:
+            QMessageBox().critical(self, "Error", f"{e}")
 
 
     def SetSelectionAsRootJointBtnClicked(self):
