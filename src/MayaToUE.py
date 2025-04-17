@@ -2,6 +2,16 @@ from MayaUtils import *
 from PySide2.QtWidgets import QLineEdit, QListWidget, QMessageBox, QPushButton, QVBoxLayout
 import maya.cmds as mc
 
+def TryAction(action):
+    def wrapper(action):
+        try: 
+            action()
+        except Exception as e:
+            QMessageBox().critical(None, "Error", f"{e}")
+
+    return wrapper
+
+
 class MayaToUE:
     def __init__(self):
         self.rootJnt = ""
@@ -83,29 +93,22 @@ class MayaToUEWidget(QMayaWindow):
         self.masterLayout.addWidget(addMeshBtn)
 
 
+    @TryAction
     def AddMeshBtnClicked(self):
-        try:
-            self.mayaToUE.AddMeshs()
-            self.meshList.clear()
-            self.meshList.addItems(self.mayaToUE.meshes)
-        except Exception as e:
-            QMessageBox().critical(self, "Error", f"{e}")
+        self.mayaToUE.AddMeshs()
+        self.meshList.clear()
+        self.meshList.addItems(self.mayaToUE.meshes)
 
 
+    @TryAction
     def AddRootJntButtonClicked(self):
-        try:
-            self.mayaToUE.AddRootJoint()
-            self.rootJntText.setText(self.mayaToUE.rootJnt)
-        except Exception as e:
-            QMessageBox().critical(self, "Error", f"{e}")
+        self.mayaToUE.AddRootJoint()
+        self.rootJntText.setText(self.mayaToUE.rootJnt)
 
 
+    @TryAction
     def SetSelectionAsRootJointBtnClicked(self):
-        try:
-            self.mayaToUE.SetSelectedAsRootJnt()
-            self.rootJntText.setText(self.mayaToUE.rootJnt)
-        except Exception as e:
-            QMessageBox().critical(self, "Error", f"{e}")
-
+        self.mayaToUE.SetSelectedAsRootJnt()
+        self.rootJntText.setText(self.mayaToUE.rootJnt)
 
 MayaToUEWidget().show()   
