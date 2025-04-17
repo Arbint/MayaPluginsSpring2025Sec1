@@ -1,2 +1,3 @@
 import sys
-sys.path.append("C:/JT/MayaTools/src")
+sys.path.append("D:/dev/MayaPluginsSpring2025Sec1")
+print("added path")
