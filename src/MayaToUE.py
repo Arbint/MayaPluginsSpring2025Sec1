@@ -1,4 +1,5 @@
 from MayaUtils import *
+from PySide2.QtCore import Signal
 from PySide2.QtGui import QIntValidator, QRegExpValidator
 from PySide2.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QMessageBox, QPushButton, QVBoxLayout, QWidget
 import maya.cmds as mc
@@ -20,15 +21,19 @@ class AnimClip:
         self.frameMax = mc.playbackOptions(q=True, max=True)
         self.shouldExport = True
 
-
 class MayaToUE:
     def __init__(self):
         self.rootJnt = ""
         self.meshes = []
         self.animationClips : list[AnimClip] = []
 
+    def RemoveAnimClip(self, clipToRemove: AnimClip):
+        self.animationClips.remove(clipToRemove)
+        print(f"animation clip removed, now we have: {len(self.animationClips)} left")
+
     def AddNewAnimEntry(self):
         self.animationClips.append(AnimClip())
+        print(f"animation clip added, now we have: {len(self.animationClips)} anim clips")
         return self.animationClips[-1]
 
     def SetSelectedAsRootJnt(self):
@@ -56,7 +61,6 @@ class MayaToUE:
         mc.parent(self.rootJnt, rootJntName)
         self.rootJnt = rootJntName
 
-        
     def AddMeshs(self):
         selection = mc.ls(sl=True)
         if not selection:
@@ -74,6 +78,7 @@ class MayaToUE:
         self.meshes = list(meshes)
 
 class AnimClipEntryWidget(QWidget):
+    entryRemoved = Signal(AnimClip)
     def __init__(self, animClip: AnimClip):
         super().__init__()
         self.animClip = animClip
@@ -117,6 +122,7 @@ class AnimClipEntryWidget(QWidget):
 
     
     def DeleteButtonClicked(self):
+        self.entryRemoved.emit(self.animClip)
         self.deleteLater()
 
 
@@ -139,7 +145,6 @@ class AnimClipEntryWidget(QWidget):
 
     def ShouldExportCheckboxToogled(self):
         self.animClip.shouldExport = not self.animClip.shouldExport
-
 
 class MayaToUEWidget(QMayaWindow):
     def GetWindowHash(self):
@@ -183,8 +188,13 @@ class MayaToUEWidget(QMayaWindow):
 
     def AddNewAnimClipEntryBtnClicked(self):
         newEntry = self.mayaToUE.AddNewAnimEntry()
-        self.animEntryLayout.addWidget(AnimClipEntryWidget(newEntry))
+        newEntryWidget = AnimClipEntryWidget(newEntry)
+        newEntryWidget.entryRemoved.connect(self.AnimClipEntryRemoved)
+        self.animEntryLayout.addWidget(newEntryWidget)
 
+    @TryAction
+    def AnimClipEntryRemoved(self, animClip: AnimClip):
+        self.mayaToUE.RemoveAnimClip(animClip)
 
     @TryAction
     def AddMeshBtnClicked(self):
