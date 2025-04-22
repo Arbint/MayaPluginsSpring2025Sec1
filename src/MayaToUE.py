@@ -94,6 +94,7 @@ class MayaToUE:
 
 class AnimClipEntryWidget(QWidget):
     entryRemoved = Signal(AnimClip)
+    entrySubfixChanged = Signal(str)
     def __init__(self, animClip: AnimClip):
         super().__init__()
         self.animClip = animClip
@@ -156,6 +157,7 @@ class AnimClipEntryWidget(QWidget):
 
     def SubfixTextChanged(self, newText):
         self.animClip.subfix = newText
+        self.entrySubfixChanged.emit(newText)
 
 
     def ShouldExportCheckboxToogled(self):
@@ -253,6 +255,7 @@ class MayaToUEWidget(QMayaWindow):
         newEntry = self.mayaToUE.AddNewAnimEntry()
         newEntryWidget = AnimClipEntryWidget(newEntry)
         newEntryWidget.entryRemoved.connect(self.AnimClipEntryRemoved)
+        newEntryWidget.entrySubfixChanged.connect(lambda x : self.UpdateSavePreviewLabel())
         self.animEntryLayout.addWidget(newEntryWidget)
         self.UpdateSavePreviewLabel()
 
