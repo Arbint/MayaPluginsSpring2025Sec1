@@ -30,6 +30,32 @@ class MayaToUE:
         self.fileName = ""
         self.saveDir = ""
     
+    def GetAllJoints(self):
+        jnts = []
+        jnts.append(self.rootJnt)
+        children = mc.listRelatives(self.rootJnt, c=True, ad=True, type="joint")
+        if children:
+            jnts.extend(children)
+
+        return jnts
+
+    def SaveFiles(self):
+        allJnts = self.GetAllJoints()
+        allMeshes = self.meshes
+
+        allObjectToExport = allJnts + allMeshes
+        mc.select(allObjectToExport, r=True)
+
+        skeletalMeshExportPath = self.GetSleletalMeshSavePath()
+
+        mc.FBXResetExport()
+        mc.FBXExportSmoothingGroups('-v', True) 
+        mc.FBXExportInputConnections('-v', False)
+
+        # -f means the file name, -s means export selected, -ea means export animation.
+        mc.FBXExport('-f', skeletalMeshExportPath, '-s', True, '-ea', False)
+
+
     def GetAnimDirPath(self):
         path = os.path.join(self.saveDir, "animations")
         return os.path.normpath(path)
@@ -224,6 +250,13 @@ class MayaToUEWidget(QMayaWindow):
 
         self.savePreviewLabel = QLabel("")
         self.masterLayout.addWidget(self.savePreviewLabel)
+
+        saveFileBtn = QPushButton("Save Files")
+        saveFileBtn.clicked.connect(self.SaveFilesBtnClicked)
+        self.masterLayout.addWidget(saveFileBtn)
+
+    def SaveFilesBtnClicked(self):
+        self.mayaToUE.SaveFiles()
 
     def UpdateSavePreviewLabel(self):
         preivewText = self.mayaToUE.GetSleletalMeshSavePath() 
