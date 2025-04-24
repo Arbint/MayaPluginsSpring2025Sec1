@@ -4,6 +4,7 @@ from PySide2.QtCore import Signal
 from PySide2.QtGui import QIntValidator, QRegExpValidator
 from PySide2.QtWidgets import QCheckBox, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget, QMessageBox, QPushButton, QVBoxLayout, QWidget
 import maya.cmds as mc
+import MayaPluginsSpring2025Sec1
 
 def TryAction(action):
     def wrapper(*args, **kwargs):
@@ -72,6 +73,26 @@ class MayaToUE:
 
             mc.playbackOptions(e=True, min = startFrame, max = endFrame)
             mc.FBXExport('-f', animExportPath, '-s', True, '-ea', True)
+
+        self.SendToUnreal()
+
+    def SendToUnreal(self):
+        ueUtilPath = os.path.join(MayaPluginsSpring2025Sec1.srcDir, "UnrealUtils.py")
+        ueUtilPath = os.path.normpath(ueUtilPath)
+
+        meshPath = self.GetSleletalMeshSavePath().replace("\\", "/")
+        aimDir = self.GetAnimDirPath().replace("\\", "/")
+
+        commands = []
+        with open(ueUtilPath, 'r') as ueUitlityFile:
+            commands = ueUitlityFile.readlines()
+
+        commands.append(f"\nImportMeshAndAnimation(\'{meshPath}\', \'{aimDir}\')")
+
+        command = "".join(commands)
+        print(command)
+
+
 
 
     def GetAnimDirPath(self):
