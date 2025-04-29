@@ -1,0 +1,5 @@
+global proc FilePathLocator() {};
+
+string $locatorInfo = `whatIs FilePathLocator`;
+string $filePath = `substring $locatorInfo 25 999`;
+print $filePath;
